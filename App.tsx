@@ -1,34 +1,42 @@
 import { StyleSheet, Text, View } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <SafeAreaView>
-        <HomeScreen />
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <LinearGradient
+      style={styles.container}
+      colors={["#715df2", "#000000"]}
+      start={{ x: 0.25, y: 1.0 }}
+      end={{ x: 1.0, y: 0.0 }}
+    >
+      <View style={styles.blurCard}>
+        <Text style={styles.text}>Sahira App</Text>
+      </View>
+    </LinearGradient>
   );
 }
 
-export const HomeScreen = () => {
-  return (
-    <View style={styles.container}>
-      <Text
-        style={{
-          fontSize: 30,
-        }}
-      >
-        Sahira App dfsadfsdfasfasfdas
-      </Text>
-    </View>
-  );
-};
-
 const styles = StyleSheet.create({
+  text: {
+    fontSize: 30,
+    color: "#fefefe",
+  },
+  blurCard: {
+    position: "relative",
+    height: 250,
+    width: 250,
+    borderWidth: 1,
+    borderRadius: 10,
+    backgroundColor: "transparent",
+    // shadowOffset: {
+    //   height: 5,
+    //   width: 5
+    // },
+    // shadowColor: "white"
+  },
   container: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#000000",
     alignItems: "center",
     justifyContent: "center",
   },
