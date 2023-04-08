@@ -1,22 +1,67 @@
-import { Image, ImageBackground, StyleSheet, Text, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { useCallback } from "react";
+import { ImageBackground, StyleSheet, Text, View } from "react-native";
 import { colors } from "./config/theme";
-import { BlurView } from "expo-blur";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    "Inter-Black": require("./assets/fonts/Inter-Black.otf"),
+    Inter: require("./assets/fonts/Inter.ttf"),
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
+    // TODO: Add an intro opacity animation
     <ImageBackground
-      blurRadius={10}
+      onLayout={onLayoutRootView}
+      blurRadius={4}
       style={{
-        width: "100%",
-        height: "100%",
+        flex: 1,
+        paddingVertical: 100,
+        paddingHorizontal: 20,
         position: "relative",
         overflow: "hidden",
         zIndex: 50,
       }}
-      source={require("./assets/primaryImage.png")}
+      source={require("./assets/background.png")}
     >
-      <Image source={require("./assets/icon.png")} style={styles.blurContainer}></Image>
+      {/* TODO: add text animations */}
+      {/* Intro text flex box so they can stay at the left side of the screen */}
+      <View>
+        <Text
+          style={{ fontFamily: "Inter-Black", color: colors.white, fontSize: 50 }}
+        >
+          Hey
+        </Text>
+        <Text style={{ fontFamily: "Inter", color: colors.white, fontSize: 50 }}>
+          Me llamo,{" "}
+          <Text
+            style={{
+              fontFamily: "Inter-Black",
+              color: colors.white,
+              fontSize: 50,
+            }}
+          >
+            Sahira
+          </Text>
+        </Text>
+        <Text style={{ fontFamily: "Inter", color: colors.white, fontSize: 50 }}>
+          CEO the Alpha Females
+        </Text>
+      </View>
+      {/* Have a nav bar with 3 icons, af, insta and spotify link with justin bieber */}
     </ImageBackground>
   );
 }
@@ -32,7 +77,7 @@ const styles = StyleSheet.create({
     left: 120,
     height: 500,
     width: 350,
-    borderRadius: 20,
+    borderRadius: 500,
     backgroundColor: "transparent",
     overflow: "hidden",
   },
