@@ -2,19 +2,22 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useCallback, type FC, type ReactNode } from "react";
 import { ImageBackground, StyleSheet, View } from "react-native";
+import { TapGestureHandler, type GestureEvent, type TapGestureHandlerEventPayload } from "react-native-gesture-handler";
 import Animated, {
   FadeInDown,
   FadeInLeft,
-  FadeInUp,
   useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
+  withSpring
 } from "react-native-reanimated";
 import { SvgInstagram, SvgMusic } from "./config/Icons";
 import { colors } from "./config/theme";
 
 SplashScreen.preventAutoHideAsync();
+
+type TapHanlder = (event: GestureEvent<TapGestureHandlerEventPayload>) => void
+
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -23,26 +26,28 @@ export default function App() {
     "Inter-ExtraLight": require("./assets/fonts/Inter-ExtraLight.otf"),
     "InterDisplay-ExtraBoldItalic": require("./assets/fonts/InterDisplay-ExtraBoldItalic.otf"),
   });
-  const pressed = useSharedValue(false);
-  const pressedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          scale: withTiming(pressed.value ? 1.2 : 1, {
-            duration: 4000,
-          }),
-        },
-      ],
-    };
-  });
+  const scale = useSharedValue(1);
 
   const eventHandler = useAnimatedGestureHandler({
     onStart: () => {
-      pressed.value = true;
+      scale.value = withSpring(1.5)
+    },
+    onActive() {
+      scale.value = withSpring(1.5)
     },
     onEnd: () => {
-      pressed.value = false;
+      scale.value = withSpring(1)
     },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          scale: scale.value,
+        },
+      ],
+    };
   });
 
   const onLayoutRootView = useCallback(async () => {
@@ -147,10 +152,12 @@ export default function App() {
         }}
       >
         <SvgInstagram size={40} stroke="white" />
-        <Animated.Image
-          source={require("./assets/alphafemale.png")}
-          style={[{ width: 60, height: 60 }, pressedStyle]}
-        />
+        <TapGestureHandler onGestureEvent={eventHandler as TapHanlder}>
+          <Animated.Image
+            source={require("./assets/alphafemale.png")}
+            style={[{ width: 60, height: 60 }, animatedStyle]}
+          />
+        </TapGestureHandler>
         <SvgMusic size={40} stroke="white" />
       </Animated.View>
     </ImageBackground>
