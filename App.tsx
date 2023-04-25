@@ -1,21 +1,20 @@
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useCallback, type FC, type ReactNode } from "react";
-import {
-  Image,
-  ImageBackground,
-  StyleSheet,
-  View
-} from "react-native";
+import { ImageBackground, StyleSheet, View } from "react-native";
 import Animated, {
-  LightSpeedInLeft, useAnimatedStyle, useSharedValue,
+  FadeInDown,
+  FadeInLeft,
+  FadeInUp,
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import { SvgInstagram, SvgMusic } from "./config/Icons";
 import { colors } from "./config/theme";
 
 SplashScreen.preventAutoHideAsync();
-
-const AnimateImageBackground = Animated.createAnimatedComponent(ImageBackground)
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -24,12 +23,27 @@ export default function App() {
     "Inter-ExtraLight": require("./assets/fonts/Inter-ExtraLight.otf"),
     "InterDisplay-ExtraBoldItalic": require("./assets/fonts/InterDisplay-ExtraBoldItalic.otf"),
   });
-  const pressed = useSharedValue(false)
-  const pressedAnimation = useAnimatedStyle(() => {
+  const pressed = useSharedValue(false);
+  const pressedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: withSpring(pressed.value ? 1.2 : 1) }],
-    }
-  })
+      transform: [
+        {
+          scale: withTiming(pressed.value ? 1.2 : 1, {
+            duration: 4000,
+          }),
+        },
+      ],
+    };
+  });
+
+  const eventHandler = useAnimatedGestureHandler({
+    onStart: () => {
+      pressed.value = true;
+    },
+    onEnd: () => {
+      pressed.value = false;
+    },
+  });
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -43,7 +57,7 @@ export default function App() {
 
   return (
     // TODO: Add an intro opacity animation
-    <AnimateImageBackground
+    <ImageBackground
       blurRadius={40}
       onLayout={onLayoutRootView}
       style={{
@@ -59,35 +73,67 @@ export default function App() {
       {/* TODO: add text animations */}
       {/* Intro text flex box so they can stay at the left side of the screen */}
       <View style={{ flex: 1 }}>
-        <CustomText color="white" fontFamily="Inter-Black" fontSize={70}>
+        <CustomText
+          color="white"
+          fontFamily="Inter-Black"
+          fontSize={70}
+          duration={800}
+        >
           Hey
         </CustomText>
-        <CustomText color="white" fontFamily="Inter-ExtraLight" fontSize={30}>
+        <CustomText
+          color="white"
+          fontFamily="Inter-ExtraLight"
+          fontSize={30}
+          duration={1000}
+        >
           Me llamo,{" "}
         </CustomText>
-        <Animated.Text
-          style={{
-            fontFamily: "Inter-Black",
-            color: colors.white,
-            fontSize: 50,
-          }}
+        <CustomText
+          fontFamily="Inter-Black"
+          color="white"
+          fontSize={50}
+          duration={1200}
         >
           Sahira
-        </Animated.Text>
-        <Animated.Text
-          style={{ fontFamily: "Inter", color: colors.white, fontSize: 30 }}
+        </CustomText>
+        <CustomText
+          fontFamily="Inter"
+          color="white"
+          fontSize={30}
+          duration={1400}
         >
           CEO
-          <CustomText fontFamily="Inter-ExtraLight" color="white" fontSize={30}>
+          <CustomText
+            fontFamily="Inter-ExtraLight"
+            color="white"
+            fontSize={30}
+            duration={1600}
+          >
             {" "}
             de
           </CustomText>
-        </Animated.Text>
-        <CustomText fontFamily="InterDisplay-ExtraBoldItalic" color="white" fontSize={40}>Alpha</CustomText>
-        <CustomText fontFamily="InterDisplay-ExtraBoldItalic" color="white" fontSize={40}>Females</CustomText>
+        </CustomText>
+        <CustomText
+          fontFamily="InterDisplay-ExtraBoldItalic"
+          color="white"
+          fontSize={40}
+          duration={1800}
+        >
+          Alpha
+        </CustomText>
+        <CustomText
+          fontFamily="InterDisplay-ExtraBoldItalic"
+          color="white"
+          fontSize={40}
+          duration={2000}
+        >
+          Females
+        </CustomText>
       </View>
       {/* Have a nav bar with 3 icons, af, insta and spotify link with justin bieber */}
-      <View
+      <Animated.View
+        entering={FadeInDown.duration(2200).delay(500)}
         style={{
           width: "80%",
           height: 80,
@@ -101,14 +147,13 @@ export default function App() {
         }}
       >
         <SvgInstagram size={40} stroke="white" />
-        <Image
+        <Animated.Image
           source={require("./assets/alphafemale.png")}
-          style={{ width: 60, height: 60 }}
+          style={[{ width: 60, height: 60 }, pressedStyle]}
         />
         <SvgMusic size={40} stroke="white" />
-      </View>
-
-    </AnimateImageBackground>
+      </Animated.View>
+    </ImageBackground>
   );
 }
 
@@ -121,6 +166,7 @@ type TextProps = {
     | "Inter-ExtraLight"
     | "InterDisplay-ExtraBoldItalic";
   fontSize: number;
+  duration: number;
 };
 
 const CustomText: FC<TextProps> = ({
@@ -128,10 +174,11 @@ const CustomText: FC<TextProps> = ({
   color,
   fontFamily,
   fontSize,
+  duration,
 }) => {
   return (
     <Animated.Text
-    entering={LightSpeedInLeft}
+      entering={FadeInLeft.duration(duration).delay(500)}
       style={{
         fontFamily,
         color,
