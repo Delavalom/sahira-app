@@ -1,11 +1,21 @@
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { useCallback } from "react";
-import { Image, ImageBackground, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, type FC, type ReactNode } from "react";
+import {
+  Image,
+  ImageBackground,
+  StyleSheet,
+  View
+} from "react-native";
+import Animated, {
+  LightSpeedInLeft, useAnimatedStyle, useSharedValue,
+} from "react-native-reanimated";
+import { SvgInstagram, SvgMusic } from "./config/Icons";
 import { colors } from "./config/theme";
-import { SvgAF, SvgInstagram, SvgMusic } from "./config/Icons";
 
 SplashScreen.preventAutoHideAsync();
+
+const AnimateImageBackground = Animated.createAnimatedComponent(ImageBackground)
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -14,6 +24,12 @@ export default function App() {
     "Inter-ExtraLight": require("./assets/fonts/Inter-ExtraLight.otf"),
     "InterDisplay-ExtraBoldItalic": require("./assets/fonts/InterDisplay-ExtraBoldItalic.otf"),
   });
+  const pressed = useSharedValue(false)
+  const pressedAnimation = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: withSpring(pressed.value ? 1.2 : 1) }],
+    }
+  })
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -27,9 +43,9 @@ export default function App() {
 
   return (
     // TODO: Add an intro opacity animation
-    <ImageBackground
+    <AnimateImageBackground
+      blurRadius={40}
       onLayout={onLayoutRootView}
-      blurRadius={4}
       style={{
         flex: 1,
         paddingTop: 100,
@@ -43,25 +59,13 @@ export default function App() {
       {/* TODO: add text animations */}
       {/* Intro text flex box so they can stay at the left side of the screen */}
       <View style={{ flex: 1 }}>
-        <Text
-          style={{
-            fontFamily: "Inter-Black",
-            color: colors.white,
-            fontSize: 70,
-          }}
-        >
+        <CustomText color="white" fontFamily="Inter-Black" fontSize={70}>
           Hey
-        </Text>
-        <Text
-          style={{
-            fontFamily: "Inter-ExtraLight",
-            color: colors.white,
-            fontSize: 30,
-          }}
-        >
+        </CustomText>
+        <CustomText color="white" fontFamily="Inter-ExtraLight" fontSize={30}>
           Me llamo,{" "}
-        </Text>
-        <Text
+        </CustomText>
+        <Animated.Text
           style={{
             fontFamily: "Inter-Black",
             color: colors.white,
@@ -69,40 +73,18 @@ export default function App() {
           }}
         >
           Sahira
-        </Text>
-        <Text
+        </Animated.Text>
+        <Animated.Text
           style={{ fontFamily: "Inter", color: colors.white, fontSize: 30 }}
         >
           CEO
-          <Text
-            style={{
-              fontFamily: "Inter-ExtraLight",
-              color: colors.white,
-              fontSize: 30,
-            }}
-          >
+          <CustomText fontFamily="Inter-ExtraLight" color="white" fontSize={30}>
             {" "}
             de
-          </Text>
-        </Text>
-        <Text
-          style={{
-            fontFamily: "InterDisplay-ExtraBoldItalic",
-            color: colors.white,
-            fontSize: 40,
-          }}
-        >
-          Alpha
-        </Text>
-        <Text
-          style={{
-            fontFamily: "InterDisplay-ExtraBoldItalic",
-            color: colors.white,
-            fontSize: 40,
-          }}
-        >
-          Females
-        </Text>
+          </CustomText>
+        </Animated.Text>
+        <CustomText fontFamily="InterDisplay-ExtraBoldItalic" color="white" fontSize={40}>Alpha</CustomText>
+        <CustomText fontFamily="InterDisplay-ExtraBoldItalic" color="white" fontSize={40}>Females</CustomText>
       </View>
       {/* Have a nav bar with 3 icons, af, insta and spotify link with justin bieber */}
       <View
@@ -119,12 +101,47 @@ export default function App() {
         }}
       >
         <SvgInstagram size={40} stroke="white" />
-        <Image source={require('./assets/alphafemale.png')} style={{width: 60, height: 60}} />
+        <Image
+          source={require("./assets/alphafemale.png")}
+          style={{ width: 60, height: 60 }}
+        />
         <SvgMusic size={40} stroke="white" />
       </View>
-    </ImageBackground>
+
+    </AnimateImageBackground>
   );
 }
+
+type TextProps = {
+  children: ReactNode;
+  color: keyof typeof colors;
+  fontFamily:
+    | "Inter"
+    | "Inter-Black"
+    | "Inter-ExtraLight"
+    | "InterDisplay-ExtraBoldItalic";
+  fontSize: number;
+};
+
+const CustomText: FC<TextProps> = ({
+  children,
+  color,
+  fontFamily,
+  fontSize,
+}) => {
+  return (
+    <Animated.Text
+    entering={LightSpeedInLeft}
+      style={{
+        fontFamily,
+        color,
+        fontSize,
+      }}
+    >
+      {children}
+    </Animated.Text>
+  );
+};
 
 const styles = StyleSheet.create({
   text: {
@@ -148,5 +165,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.black,
     alignItems: "center",
     justifyContent: "space-evenly",
+  },
+  box: {
+    width: 50,
+    height: 40,
+    backgroundColor: "black",
+    margin: 30,
   },
 });
