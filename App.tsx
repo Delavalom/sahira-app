@@ -2,22 +2,26 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useCallback, type FC, type ReactNode } from "react";
 import { ImageBackground, StyleSheet, View } from "react-native";
-import { TapGestureHandler, type GestureEvent, type TapGestureHandlerEventPayload } from "react-native-gesture-handler";
+import {
+  TapGestureHandler,
+  type GestureEvent,
+  type TapGestureHandlerEventPayload,
+} from "react-native-gesture-handler";
 import Animated, {
   FadeInDown,
   FadeInLeft,
   useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
-  withSpring
+  withSpring,
 } from "react-native-reanimated";
 import { SvgInstagram, SvgMusic } from "./config/Icons";
 import { colors } from "./config/theme";
+import AppLink from "react-native-app-link";
 
 SplashScreen.preventAutoHideAsync();
 
-type TapHanlder = (event: GestureEvent<TapGestureHandlerEventPayload>) => void
-
+type TapHanlder = (event: GestureEvent<TapGestureHandlerEventPayload>) => void;
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -30,13 +34,13 @@ export default function App() {
 
   const eventHandler = useAnimatedGestureHandler({
     onStart: () => {
-      scale.value = withSpring(1.5)
+      scale.value = withSpring(1.5);
     },
     onActive() {
-      scale.value = withSpring(1.5)
+      scale.value = withSpring(1.5);
     },
     onEnd: () => {
-      scale.value = withSpring(1)
+      scale.value = withSpring(1);
     },
   });
 
@@ -63,7 +67,7 @@ export default function App() {
   return (
     // TODO: Add an intro opacity animation
     <ImageBackground
-      blurRadius={40}
+      blurRadius={4}
       onLayout={onLayoutRootView}
       style={{
         flex: 1,
@@ -151,14 +155,36 @@ export default function App() {
           alignItems: "center",
         }}
       >
-        <SvgInstagram size={40} stroke="white" />
+        <SvgInstagram
+          size={40}
+          stroke="white"
+          onPress={() => {
+            AppLink.maybeOpenURL("instagram://user?username=_.sahiramarie", {
+              appStoreId: 389801252,
+              appName: "instagram",
+              playStoreId: "com.instagram.android",
+              appStoreLocale: "do",
+            });
+          }}
+        />
         <TapGestureHandler onGestureEvent={eventHandler as TapHanlder}>
           <Animated.Image
             source={require("./assets/alphafemale.png")}
             style={[{ width: 60, height: 60 }, animatedStyle]}
           />
         </TapGestureHandler>
-        <SvgMusic size={40} stroke="white" />
+        <SvgMusic
+          size={40}
+          stroke="white"
+          onPress={() => {
+            AppLink.maybeOpenURL("spotify://track/4umIPjkehX1r7uhmGvXiSV?si=fb08e8df7a0e4165", {
+              appStoreId: 324684580,
+              appName: "spotify",
+              playStoreId: "com.spotify.music",
+              appStoreLocale: "do",
+            });
+          }}
+        />
       </Animated.View>
     </ImageBackground>
   );
