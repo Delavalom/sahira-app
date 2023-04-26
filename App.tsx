@@ -1,7 +1,7 @@
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useCallback, type FC, type ReactNode } from "react";
-import { ImageBackground, StyleSheet, View } from "react-native";
+import { AppRegistry, ImageBackground, StyleSheet, View } from "react-native";
 import {
   TapGestureHandler,
   PanGestureHandler,
@@ -17,78 +17,68 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { SvgInstagram, SvgMusic } from "./config/Icons";
-import { colors } from "./config/theme";
+import { SvgInstagram, SvgMusic } from "./src/config/Icons";
+import { colors } from "./src/config/theme";
 import AppLink from "react-native-app-link";
 import PagerView from "react-native-pager-view";
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  gql,
+  useQuery,
+} from "@apollo/client";
+import { CustomText } from "./src/components/CustomText";
+
+const client = new ApolloClient({
+  uri: "https://graphql.contentful.com/content/v1/spaces/ksc9hpf02ja4/environments/master",
+  cache: new InMemoryCache(),
+  headers: {
+    Autorization: `Bearer${"CFPAT-rWenGHbztHiFt4YZ_YN14Oy4jbyaQp9ErVTReomp75g"}`,
+  },
+});
 
 SplashScreen.preventAutoHideAsync();
 
 type TapHanlder = (event: GestureEvent<TapGestureHandlerEventPayload>) => void;
 
+const GET_IMAGES = gql`
+  query pageViewCollectionQuery {
+    pageViewCollection {
+      items {
+        backgroundImage {
+          url
+        }
+        isMainView
+      }
+    }
+  }
+`;
+
+type Schema = {
+  pageViewCollection: {
+    items: {
+      backgroundImage: {
+        url: string;
+      };
+      isMainView: boolean;
+    }[];
+  };
+};
+
 const startingPosition = 10;
 
 export default function App() {
-  const pressed = useSharedValue(false);
-  const x = useSharedValue(startingPosition);
-  const y = useSharedValue(startingPosition);
-
-  const eventHandler = useAnimatedGestureHandler<
-    PanGestureHandlerGestureEvent,
-    { startX: number; startY: number }
-  >({
-    onStart(event, ctx) {
-      pressed.value = true;
-      ctx.startX = x.value;
-      ctx.startY = y.value;
-    },
-    onActive(event, ctx) {
-      x.value = ctx.startX + event.translationX;
-      y.value = ctx.startY + event.translationY;
-    },
-    onEnd() {
-      pressed.value = false;
-      x.value = withSpring(startingPosition);
-      y.value = withSpring(startingPosition);
-    },
-  });
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: x.value }, { translateY: y.value }],
-    };
-  });
-
   return (
-    <PagerView style={{ flex: 1 }} initialPage={0}>
-      <MainView key="1" />
-      <ImageBackground
-        blurRadius={4}
-        key="2"
-        source={require("./assets/page2.jpg")}
-        style={{ flex: 1, padding: 40 }}
-      >
-        <PanGestureHandler onGestureEvent={eventHandler}>
-          <Animated.Image
-            style={[
-              { width: 300, height: 400, borderRadius: 20 },
-              animatedStyle,
-            ]}
-            source={require("./assets/page2.jpg")}
-          ></Animated.Image>
-        </PanGestureHandler>
-      </ImageBackground>
-    </PagerView>
+    <ApolloProvider client={client}>
+      <Views />
+    </ApolloProvider>
   );
 }
 
-function MainView() {
-  const [fontsLoaded] = useFonts({
-    "Inter-Black": require("./assets/fonts/Inter-Black.otf"),
-    Inter: require("./assets/fonts/Inter.ttf"),
-    "Inter-ExtraLight": require("./assets/fonts/Inter-ExtraLight.otf"),
-    "InterDisplay-ExtraBoldItalic": require("./assets/fonts/InterDisplay-ExtraBoldItalic.otf"),
-  });
+AppRegistry.registerComponent('mainComponent', () => App)
+
+function MainView({ imageUrl }: { imageUrl: string | undefined }) {
   const scale = useSharedValue(1);
 
   const eventHandler = useAnimatedGestureHandler({
@@ -113,21 +103,10 @@ function MainView() {
     };
   });
 
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) {
-    return null;
-  }
-
   return (
     // TODO: Add an intro opacity animation
     <ImageBackground
       blurRadius={4}
-      onLayout={onLayoutRootView}
       style={{
         flex: 1,
         paddingTop: 100,
@@ -252,38 +231,97 @@ function MainView() {
   );
 }
 
-type TextProps = {
-  children: ReactNode;
-  color: keyof typeof colors;
-  fontFamily:
-    | "Inter"
-    | "Inter-Black"
-    | "Inter-ExtraLight"
-    | "InterDisplay-ExtraBoldItalic";
-  fontSize: number;
-  duration: number;
-};
+const Views = () => {
+  const pressed = useSharedValue(false);
+  const x = useSharedValue(startingPosition);
+  const y = useSharedValue(startingPosition);
 
-const CustomText: FC<TextProps> = ({
-  children,
-  color,
-  fontFamily,
-  fontSize,
-  duration,
-}) => {
+  const { data } = useQuery<Schema>(GET_IMAGES);
+
+  const [fontsLoaded] = useFonts({
+    "Inter-Black": require("./assets/fonts/Inter-Black.otf"),
+    Inter: require("./assets/fonts/Inter.ttf"),
+    "Inter-ExtraLight": require("./assets/fonts/Inter-ExtraLight.otf"),
+    "InterDisplay-ExtraBoldItalic": require("./assets/fonts/InterDisplay-ExtraBoldItalic.otf"),
+  });
+
+  const mainView = data?.pageViewCollection.items.find(
+    (item) => item.isMainView === true
+  );
+
+  const eventHandler = useAnimatedGestureHandler<
+    PanGestureHandlerGestureEvent,
+    { startX: number; startY: number }
+  >({
+    onStart(event, ctx) {
+      pressed.value = true;
+      ctx.startX = x.value;
+      ctx.startY = y.value;
+    },
+    onActive(event, ctx) {
+      x.value = ctx.startX + event.translationX;
+      y.value = ctx.startY + event.translationY;
+    },
+    onEnd() {
+      pressed.value = false;
+      x.value = withSpring(startingPosition);
+      y.value = withSpring(startingPosition);
+    },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: x.value }, { translateY: y.value }],
+    };
+  });
+
+  console.log(mainView);
+
+  const views = data?.pageViewCollection.items
+    .filter((item) => item.isMainView === false)
+    .map((view) => view.backgroundImage.url);
+
+  console.log(views);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded && data) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <Animated.Text
-      entering={FadeInLeft.duration(duration).delay(500)}
-      style={{
-        fontFamily,
-        color,
-        fontSize,
-      }}
-    >
-      {children}
-    </Animated.Text>
+    <PagerView style={{ flex: 1 }} initialPage={0} onLayout={onLayoutRootView}>
+      <MainView key="1" imageUrl={mainView?.backgroundImage.url} />
+      {views &&
+        views.map((view, idx) => (
+          <ImageBackground
+            blurRadius={4}
+            key={idx + 2}
+            source={require("./assets/page2.jpg")}
+            style={{ flex: 1, padding: 40 }}
+          >
+            <PanGestureHandler onGestureEvent={eventHandler}>
+              <Animated.Image
+                style={[
+                  { width: 300, height: 400, borderRadius: 20 },
+                  animatedStyle,
+                ]}
+                source={require("./assets/page2.jpg")}
+              ></Animated.Image>
+            </PanGestureHandler>
+          </ImageBackground>
+        ))}
+    </PagerView>
   );
 };
+
+
+
+
 
 const styles = StyleSheet.create({
   text: {
