@@ -4,8 +4,10 @@ import React, { useCallback, type FC, type ReactNode } from "react";
 import { ImageBackground, StyleSheet, View } from "react-native";
 import {
   TapGestureHandler,
+  PanGestureHandler,
   type GestureEvent,
   type TapGestureHandlerEventPayload,
+  type PanGestureHandlerGestureEvent,
 } from "react-native-gesture-handler";
 import Animated, {
   FadeInDown,
@@ -18,12 +20,69 @@ import Animated, {
 import { SvgInstagram, SvgMusic } from "./config/Icons";
 import { colors } from "./config/theme";
 import AppLink from "react-native-app-link";
+import PagerView from "react-native-pager-view";
 
 SplashScreen.preventAutoHideAsync();
 
 type TapHanlder = (event: GestureEvent<TapGestureHandlerEventPayload>) => void;
 
+const startingPosition = 10;
+
 export default function App() {
+  const pressed = useSharedValue(false);
+  const x = useSharedValue(startingPosition);
+  const y = useSharedValue(startingPosition);
+
+  const eventHandler = useAnimatedGestureHandler<
+    PanGestureHandlerGestureEvent,
+    { startX: number; startY: number }
+  >({
+    onStart(event, ctx) {
+      pressed.value = true;
+      ctx.startX = x.value;
+      ctx.startY = y.value;
+    },
+    onActive(event, ctx) {
+      x.value = ctx.startX + event.translationX;
+      y.value = ctx.startY + event.translationY;
+    },
+    onEnd() {
+      pressed.value = false;
+      x.value = withSpring(startingPosition);
+      y.value = withSpring(startingPosition);
+    },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: x.value }, { translateY: y.value }],
+    };
+  });
+
+  return (
+    <PagerView style={{ flex: 1 }} initialPage={0}>
+      <MainView key="1" />
+      <ImageBackground
+        blurRadius={4}
+        key="2"
+        source={require("./assets/page2.jpg")}
+        style={{ flex: 1, padding: 40 }}
+      >
+        <PanGestureHandler onGestureEvent={eventHandler}>
+          <Animated.Image
+            style={[
+              { width: 300, height: 400, borderRadius: 20 },
+              animatedStyle,
+            ]}
+            source={require("./assets/page2.jpg")}
+          ></Animated.Image>
+        </PanGestureHandler>
+      </ImageBackground>
+    </PagerView>
+  );
+}
+
+function MainView() {
   const [fontsLoaded] = useFonts({
     "Inter-Black": require("./assets/fonts/Inter-Black.otf"),
     Inter: require("./assets/fonts/Inter.ttf"),
@@ -177,12 +236,15 @@ export default function App() {
           size={40}
           stroke="white"
           onPress={() => {
-            AppLink.maybeOpenURL("spotify://track/4umIPjkehX1r7uhmGvXiSV?si=fb08e8df7a0e4165", {
-              appStoreId: 324684580,
-              appName: "spotify",
-              playStoreId: "com.spotify.music",
-              appStoreLocale: "do",
-            });
+            AppLink.maybeOpenURL(
+              "spotify://track/4umIPjkehX1r7uhmGvXiSV?si=fb08e8df7a0e4165",
+              {
+                appStoreId: 324684580,
+                appName: "spotify",
+                playStoreId: "com.spotify.music",
+                appStoreLocale: "do",
+              }
+            );
           }}
         />
       </Animated.View>
