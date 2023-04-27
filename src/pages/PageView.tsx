@@ -13,7 +13,7 @@ import Animated, {
 
 const startingPosition = 10;
 
-export const PageView: FC<{ imageUrl: string }> = ({ imageUrl }) => {
+export const PageView: FC<{ imageUrl: { uri: string } }> = ({ imageUrl }) => {
   const pressed = useSharedValue(false);
   const x = useSharedValue(startingPosition);
   const y = useSharedValue(startingPosition);
@@ -47,13 +47,13 @@ export const PageView: FC<{ imageUrl: string }> = ({ imageUrl }) => {
   return (
     <ImageBackground
       blurRadius={4}
-      source={{uri: imageUrl}}
+      source={imageUrl}
       style={{ flex: 1, padding: 40 }}
     >
       <PanGestureHandler onGestureEvent={eventHandler}>
         <Animated.Image
           style={[{ width: 300, height: 400, borderRadius: 20 }, animatedStyle]}
-          source={{uri: imageUrl}}
+          source={imageUrl}
         ></Animated.Image>
       </PanGestureHandler>
     </ImageBackground>

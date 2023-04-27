@@ -1,7 +1,7 @@
 import { ApolloProvider, useQuery } from "@apollo/client";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import { AppRegistry, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import { MainView } from "./src/pages/MainView";
@@ -36,32 +36,28 @@ function Views() {
     if (fontsLoaded && data) {
       await SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
-  const views = useMemo(() => {
-    if (!data) return <View></View>;
-    const pageView = data.pageViewCollection.items
-      .filter((item) => item.isMainView === false)
-      .map((view, idx) => (
-        <PageView key={`${idx + 2}`} imageUrl={view.backgroundImage.url} />
-      ));
+  }, [fontsLoaded, data]);
 
-    return pageView;
-  }, [data]);
-
-  const mainUrl = useMemo(
-    () =>
-      data?.pageViewCollection.items.find((item) => item.isMainView === true)
-        ?.backgroundImage.url ?? "",
-    [data]
-  );
-
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !data) {
     return <View />;
   }
 
+  const views = data.pageViewCollection.items
+    .filter((item) => item.isMainView === false)
+    .map((view, idx) => (
+      <PageView
+        key={`${idx + 2}`}
+        imageUrl={{ uri: view.backgroundImage.url }}
+      />
+    ));
+
+  const mainUrl =
+    data.pageViewCollection.items.find((item) => item.isMainView === true)
+      ?.backgroundImage.url ?? "";
+
   return (
     <PagerView style={{ flex: 1 }} initialPage={0} onLayout={onLayoutRootView}>
-      {<MainView key="1" imageUrl={{ uri: mainUrl }} />}
+      <MainView key="1" imageUrl={{ uri: mainUrl }} />
       {views}
     </PagerView>
   );

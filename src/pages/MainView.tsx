@@ -54,7 +54,7 @@ export function MainView({ imageUrl }: { imageUrl: { uri: string } }) {
         overflow: "hidden",
         zIndex: 50,
       }}
-      source={{ uri: imageUrl.uri }}
+      source={imageUrl}
     >
       {/* TODO: add text animations */}
       {/* Intro text flex box so they can stay at the left side of the screen */}
