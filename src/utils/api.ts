@@ -1,5 +1,11 @@
-import { ApolloClient, InMemoryCache, createHttpLink, gql } from "@apollo/client";
-import { setContext } from '@apollo/client/link/context';
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  gql,
+} from "@apollo/client";
+import Constants from 'expo-constants';
+import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createHttpLink({
   uri: "https://graphql.contentful.com/content/v1/spaces/ksc9hpf02ja4/environments/master",
@@ -11,9 +17,9 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      authorization: `Bearer ${"aktC5nqLKicq0JOeC5DG8LfekkuNZESHEH-5IDQ0IDg"}`
-    }
-  }
+      authorization: `Bearer ${Constants.expoConfig?.extra?.apiToken}`,
+    },
+  };
 });
 
 export const client = new ApolloClient({
