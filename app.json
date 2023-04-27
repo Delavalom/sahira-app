@@ -28,6 +28,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0028c9ce-df49-49ed-925c-526d1b94999f"
+      }
+    },
+    "owner": "delavalom"
   }
 }
