@@ -1,5 +1,10 @@
 import { StyleSheet } from "react-native";
-import { colors } from "../config/theme";
+
+export const colors = {
+  black: "#000000",
+  white: "#fefefe",
+  purple: "#715df2"
+}
 
 export const styles = StyleSheet.create({
     text: {

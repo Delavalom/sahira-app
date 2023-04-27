@@ -1,11 +1,24 @@
-import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
+import { ApolloClient, InMemoryCache, createHttpLink, gql } from "@apollo/client";
+import { setContext } from '@apollo/client/link/context';
+
+const httpLink = createHttpLink({
+  uri: "https://graphql.contentful.com/content/v1/spaces/ksc9hpf02ja4/environments/master",
+});
+
+const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      authorization: `Bearer ${"aktC5nqLKicq0JOeC5DG8LfekkuNZESHEH-5IDQ0IDg"}`
+    }
+  }
+});
 
 export const client = new ApolloClient({
-  uri: "https://graphql.contentful.com/content/v1/spaces/ksc9hpf02ja4/environments/master",
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
-  headers: {
-    Autorization: `Bearer${"CFPAT-rWenGHbztHiFt4YZ_YN14Oy4jbyaQp9ErVTReomp75g"}`,
-  },
 });
 
 export const querys = {

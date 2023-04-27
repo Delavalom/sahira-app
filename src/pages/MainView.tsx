@@ -1,23 +1,23 @@
 import { ImageBackground, View } from "react-native";
-import AppLink from "react-native-app-link";
 import {
-    TapGestureHandler,
-    type GestureEvent,
-    type TapGestureHandlerEventPayload,
+  TapGestureHandler,
+  type GestureEvent,
+  type TapGestureHandlerEventPayload,
 } from "react-native-gesture-handler";
 import Animated, {
-    FadeInDown,
-    useAnimatedGestureHandler,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
+  FadeInDown,
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from "react-native-reanimated";
 import { CustomText } from "../components/CustomText";
-import { SvgInstagram, SvgMusic } from "../config/Icons";
+import { InstagramIcon } from "../components/InstagramIcon";
+import { SpotifyIcon } from "../components/SpotifyIcon";
 
 type TapHanlder = (event: GestureEvent<TapGestureHandlerEventPayload>) => void;
 
-export function MainView({ imageUrl }: { imageUrl: string | undefined }) {
+export function MainView({ imageUrl }: { imageUrl: { uri: string } }) {
   const scale = useSharedValue(1);
 
   const eventHandler = useAnimatedGestureHandler({
@@ -54,7 +54,7 @@ export function MainView({ imageUrl }: { imageUrl: string | undefined }) {
         overflow: "hidden",
         zIndex: 50,
       }}
-      source={require("./assets/background.png")}
+      source={{ uri: imageUrl.uri }}
     >
       {/* TODO: add text animations */}
       {/* Intro text flex box so they can stay at the left side of the screen */}
@@ -132,38 +132,23 @@ export function MainView({ imageUrl }: { imageUrl: string | undefined }) {
           alignItems: "center",
         }}
       >
-        <SvgInstagram
+        <InstagramIcon
           size={40}
           stroke="white"
-          onPress={() => {
-            AppLink.maybeOpenURL("instagram://user?username=_.sahiramarie", {
-              appStoreId: 389801252,
-              appName: "instagram",
-              playStoreId: "com.instagram.android",
-              appStoreLocale: "do",
-            });
-          }}
+          instagramUsername="_.sahiramarie"
+          appStoreLocation="do"
         />
         <TapGestureHandler onGestureEvent={eventHandler as TapHanlder}>
           <Animated.Image
-            source={require("./assets/alphafemale.png")}
+            source={require("../../assets/alphafemale.png")}
             style={[{ width: 60, height: 60 }, animatedStyle]}
           />
         </TapGestureHandler>
-        <SvgMusic
+        <SpotifyIcon
           size={40}
           stroke="white"
-          onPress={() => {
-            AppLink.maybeOpenURL(
-              "spotify://track/4umIPjkehX1r7uhmGvXiSV?si=fb08e8df7a0e4165",
-              {
-                appStoreId: 324684580,
-                appName: "spotify",
-                playStoreId: "com.spotify.music",
-                appStoreLocale: "do",
-              }
-            );
-          }}
+          spotifyTrackID="4umIPjkehX1r7uhmGvXiSV?si=fb08e8df7a0e4165"
+          appStoreLocation="do"
         />
       </Animated.View>
     </ImageBackground>
