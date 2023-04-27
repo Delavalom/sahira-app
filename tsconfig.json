@@ -5,7 +5,7 @@
     "strictNullChecks": true,
     "useUnknownInCatchVariables": true,
     "noUncheckedIndexedAccess": true,
-    "typeRoots": ["node_modules/@types","./src/types"]
+    "typeRoots": ["node_modules/@types"]
   },
   "extends": "expo/tsconfig.base"
 }

@@ -4,7 +4,7 @@ import {
   createHttpLink,
   gql,
 } from "@apollo/client";
-import Constants from 'expo-constants';
+import Env from '../../config'
 import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createHttpLink({
@@ -17,7 +17,7 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      authorization: `Bearer ${Constants.expoConfig?.extra?.apiToken}`,
+      authorization: `Bearer ${Env.apiToken}`,
     },
   };
 });
